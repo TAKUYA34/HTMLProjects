@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>動画アップロード＆自動切り替え</title>
+</head>
+<body>
+
+  <h1>動画アップロードフォーム</h1>
+  <form id="uploadForm" enctype="multipart/form-data">
+    <input type="file" name="videos" id="videoInput" multiple accept="video/*" />
+    <button type="button" id="uploadButton">動画をアップロード</button>
+  </form>
+
+  <div id="uploadedVideos">
+    <h2>アップロードされた動画</h2>
+    <div>
+      <label for="videoSize">サイズを選択:</label>
+      <select id="videoSize">
+        <option value="small">小（320x180）</option>
+        <option value="medium" selected>中（640x360）</option>
+        <option value="large">大（1280x720）</option>
+      </select>
+    </div>
+    <!-- 動画表示領域 -->
+    <div id="videoDisplay">
+      <video id="mainVideo" controls autoplay></video>
+    </div>
+  </div>
+
+  <script>
+    const videoInput = document.getElementById('videoInput');
+    const uploadButton = document.getElementById('uploadButton');
+    const videoSizeSelector = document.getElementById('videoSize');
+    const mainVideo = document.getElementById('mainVideo');
+
+    let videoURLs = []; // アップロードされた動画のURLを保存
+    let currentVideoIndex = 0; // 現在再生中の動画のインデックス
+    let changeInterval; // 動画の切り替えタイマー
+
+    // 動画を表示する関数
+    const displayVideos = () => {
+      const files = videoInput.files;
+      console.log("選択されたファイル一覧:", videoInput.files);
+      
+      // アップロードされた動画をリセット
+      Array.from(files).forEach((file) => {
+        const fileURL = URL.createObjectURL(file); // 動画ファイルをブラウザで表示するためのURLを作成
+        console.log("生成されたBlob URL:", fileURL); // Blob URLを確認
+        videoURLs.push(fileURL);
+      });
+      
+      // デバッグ：videoURLs 配列を表示
+        console.log("アップロードされた動画URL一覧:", videoURLs);
+
+
+      if (videoURLs.length > 0) {
+        // 最初の動画を再生
+        playVideo(0);
+        startVideoRotation(); // 自動切り替えを開始
+      }
+    };
+
+    // 指定したインデックスの動画を再生
+    const playVideo = (index) => {
+      if (videoURLs[index]) {
+        mainVideo.src = videoURLs[index];
+        mainVideo.play();
+        currentVideoIndex = index;
+      }
+    };
+
+    // 動画の自動切り替えを開始
+    const startVideoRotation = () => {
+      if (changeInterval) clearInterval(changeInterval); // 既存のタイマーをクリア
+      changeInterval = setInterval(() => {
+        currentVideoIndex = (currentVideoIndex + 1) % videoURLs.length; // 次の動画へ
+        console.log("現在再生中の動画インデックス:", currentVideoIndex);
+        console.log("現在再生中の動画URL:", videoURLs[currentVideoIndex]);
+        playVideo(currentVideoIndex);
+      }, 60000); // 1分ごと（60,000ミリ秒）
+    };
+
+    // 動画サイズ変更イベント
+    videoSizeSelector.addEventListener('change', (event) => {
+      const selectedSize = event.target.value;
+
+      // 動画のサイズを変更
+      if (selectedSize === 'small') {
+        mainVideo.width = 320;
+        mainVideo.height = 180;
+      } else if (selectedSize === 'medium') {
+        mainVideo.width = 640;
+        mainVideo.height = 360;
+      } else if (selectedSize === 'large') {
+        mainVideo.width = 1280;
+        mainVideo.height = 720;
+      }
+    });
+
+    // アップロードボタンのクリックイベント
+    uploadButton.addEventListener('click', () => {
+        displayVideos();
+        console.log("現在のvideoURLs：", videoURLs);
+        });
+  </script>
+</body>
+</html>
