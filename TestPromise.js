@@ -1,11 +1,15 @@
 // 非同期処理をPromiseオブジェクトでラップ
 const asyncFunctionPromise = () => {
   return new Promise((resolve, reject) => {
-    // 1秒後に成功を返す
-    setTimeout(
-      () => resolve(),
-      1000
-    );
+    try {
+      // 1秒後に成功を返す
+      setTimeout(
+        () => resolve(),
+        1000
+      );
+    } catch (e) {
+      return reject(e);
+    } 
   });
 };
 
